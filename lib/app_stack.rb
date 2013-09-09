@@ -95,12 +95,14 @@ module AppStack
       raise "no directory found for #{app}" unless File.directory?(app_dir)
       raise "no configuration found for #{app}" unless
                File.exists?(app_dir + '/' + File.basename(@conf_file))
+      carp "Merge #{app.bold.blue}"
 
       # loop over remote files
       elist = export_list(app_dir)
       elist.each do |file|
         # skip .erb file as template
-        next if elist.include?(file.sub(/#{@config['tpl_ext']}$/, ''))
+        next if file.match(/#{@config['tpl_ext']}$/) &&
+                elist.include?(file.sub(/#{@config['tpl_ext']}$/, ''))
         if @files[file].nil? || @files[file] == app # yes, copy it
           @files[file] = app unless @files[file]
 
@@ -110,17 +112,17 @@ module AppStack
 
           # if has a template file, use render rather than copy
           if File.exists?(src_f + @config['tpl_ext'])
-            carp "From #{stack_app.blue.bold} copy #{file.bold}",
+            carp "From #{app.blue.bold} render #{file.bold}",
                  render_file!(src_f + @config['tpl_ext'], tgt_f), 1
           else
-            carp "From #{stack_app.blue.bold} render #{file.bold}",
+            carp "From #{app.blue.bold} copy #{file.bold}",
                  copy_file!(src_f, tgt_f), 1
           end
 
           # register the copied file to app-root file list
           @self_files << file unless @self_files.include?(file)
         else # don't handle it
-          carp "From #{stack_app.blue.bold} #{file.bold}",
+          carp "From #{app.blue.bold} #{file.bold}",
                'skip, use '.white + @files[file], 2
         end
       end
@@ -200,6 +202,8 @@ module AppStack
       end
     else
       if newer?(f, target)
+        target_dir = File.dirname(target)
+        FileUtils.mkdir_p target_dir unless File.directory?(target_dir)
         FileUtils.copy f, target
         done = 'copied'.bold.green
       else

@@ -3,6 +3,7 @@ export:
   - lib/**/*.rb
   - config/**/*
   - app/**/*.rb
+  - Gemfile
 include:
   - spec/**/*.rb
 exclude:
