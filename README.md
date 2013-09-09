@@ -41,6 +41,8 @@ and `exclude` adjust files that imports from other modules.
 
 Variables defined in `attrs` will be assigned into `.erb` files.
 
+`gems` need a support from `Gemfile.erb`.
+
 ## Templates
 
 If you have both a `config.yml` and a `config.yml.erb` file, when export,
