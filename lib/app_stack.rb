@@ -21,7 +21,7 @@ module AppStack
   def stackup!(conf_file)
     load_configuration(conf_file)
 
-    # register_self
+    register_self!(@app_root)
     # merge_stack!(stack_app)
 
     # rewrite configuration back to app-stack file
@@ -40,10 +40,58 @@ module AppStack
     @stack_dir = File.expand_path(@app_root + '/' +
                       @stack_dir) if @stack_dir.match(/^\.\.?\//)
 
+    @verbose = @config['verbose'] || 1
+    @verbose = @verbose.to_i
+
     @files = @config['files'] || {}
   end
 
+  # for files already in the app root, register to no-copy list
+  def register_self!(dir)
+    Find.find(dir).each do |f|
+      next if f == dir
+      basename = f.sub(/^#{dir}\//, '')
+      next if basename.match(/^.git$/)
+      next if basename.match(/^.git\W/)
+      next if gitignore_list(dir).include?(basename)
 
+      if @files[basename]
+        carp "From #{'self'.blue.bold} #{basename.bold} ",
+             'keep'.white, 2 if @files[basename] == '__self'
+      else
+        carp "From #{'self'.blue.bold} #{basename.bold}",
+             'registed'.green.bold, 1
+        @files[basename] = '__self'
+      end
+    end
+  end
+
+  # private utility functions
+
+  # print debug / information message to console based on verbose level
+  def carp(job, state = 'done'.bold.green, v = 1)
+    return if @verbose < v
+    dots = 70 - job.size
+    job += ' ' + '.' * dots if dots > 0
+    puts job + state
+  end
+
+  # fetch (and cache) git ignore file lists for a specific directory
+  def gitignore_list(dir)
+    @gitignore_list ||= {}
+    @gitignore_list[dir] ||= []
+
+    ilist = []
+    if File.exists?(dir + '/.gitignore')
+      File.read(dir + '/.gitignore').split("\n").each do |line|
+        Dir[dir + '/' + line].each do |f|
+          f.sub!(/^#{dir}\//, '')
+          ilist << f unless ilist.include?(f)
+        end
+      end
+    end
+    @gitignore_list[dir] = ilist
+  end
 
   # use module variables, skip `new`
   # rubocop:disable ModuleFunction

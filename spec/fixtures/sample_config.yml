@@ -19,5 +19,5 @@ attrs:
       mongoid: ''
     development:
 files:
-  README.md << __self
+  README.md: '__self'
 

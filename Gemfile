@@ -6,4 +6,5 @@ gem 'activesupport', '~> 3.2.14'
 
 group :development, :test do
   gem 'rspec', '~> 2.14.1'
+  gem 'simplecov', '~> 0.7.1'
 end

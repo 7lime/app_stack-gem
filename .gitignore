@@ -21,8 +21,7 @@ db/*.db
 db/*.sqlite*
 .yardoc/*
 .yardoc/**/*
-doc/*
-doc/**/*
-Gemfile.lock
+docs/*
+docs/**/*
 .dev_flow
 *.gem
