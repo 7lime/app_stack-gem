@@ -23,12 +23,11 @@ module AppStack
 
     register_self!(@app_root)
     merge_stacks!(@config['stack'])
-
-    render_self!(@app_root)
+    render_self!(@self_files)
 
     # rewrite configuration back to app-stack file
     @config['files'] = @files
-    File.open(file, 'wb') { |fh| fh.puts YAML.dump(@config) }
+    File.open(conf_file, 'wb') { |fh| fh.puts YAML.dump(@config) }
   end
 
   # convert directory names, load configuration from yaml file
@@ -46,8 +45,12 @@ module AppStack
     @verbose = @config['verbose'] || 1
     @verbose = @verbose.to_i
 
+    @config['tpl_ext'] ||= '.erb'
+
     # attrs to assigned into template
     @attrs = {}
+    # file list under the app_root
+    @self_files = []
 
     @files = @config['files'] || {}
   end
@@ -68,6 +71,19 @@ module AppStack
         carp "From #{'self'.blue.bold} #{basename.bold}",
              'registed'.green.bold, 1
         @files[basename] = '__self'
+      end
+
+      @self_files << f unless @self_files.include?(f)
+    end
+  end
+
+  # render file in app-root
+  def render_self!(files)
+    files.each do |f|
+      if File.exists?(f + @config['tpl_ext'])
+        basename = f.sub(/^#{@app_root}\//, '')
+        carp "From #{'self'.blue.bold} render #{basename.bold}",
+             render_file!(f + @config['tpl_ext'], f), 1
       end
     end
   end
@@ -100,25 +116,13 @@ module AppStack
             carp "From #{stack_app.blue.bold} render #{file.bold}",
                  copy_file!(src_f, tgt_f), 1
           end
+
+          # register the copied file to app-root file list
+          @self_files << file unless @self_files.include?(file)
         else # don't handle it
           carp "From #{stack_app.blue.bold} #{file.bold}",
                'skip, use '.white + @files[file], 2
         end
-      end
-    end
-  end
-
-  def render_self!(dir)
-    Find.find(dir).each do |f|
-      next if f == dir
-      basename = f.sub(/^#{dir}\//, '')
-      next if basename.match(/^.git$/)
-      next if basename.match(/^.git\W/)
-      next if gitignore_list(dir).include?(basename)
-
-      if File.exists?(f + @config['tpl_ext'])
-        carp "Render #{basename.bold} ",
-             render_file!(f + @config['tpl_ext'], f), 1
       end
     end
   end
@@ -128,7 +132,7 @@ module AppStack
     return if @verbose < v
     dots = 70 - job.size
     job += ' ' + '.' * dots if dots > 0
-    puts job + state
+    puts job + ' ' + state
   end
 
   # fetch (and cache) git ignore file lists for a specific directory

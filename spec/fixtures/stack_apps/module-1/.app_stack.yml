@@ -1,0 +1,17 @@
+stack: [module-1, module-2]
+export:
+  - lib/**/*.rb
+  - config/**/*
+  - app/**/*.rb
+attrs:
+  application_name: App Name for Module 1
+  application_code: module_1_code
+  gems:
+    default:
+      - rspec: '~> 1.0.0'
+      - mongoid: ''
+    development:
+      - rack-test: '~> 0.1.0'
+files:
+  README.md: '__self'
+
