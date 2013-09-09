@@ -21,14 +21,4 @@ attrs:
     development:
       app_stack: ~> 0.0.8
 files:
-  .app_stack.yml: __self
-  .gitignore: __self
-  Gemfile: __self
-  config: __self
-  config/self_render.conf: __self
-  config/self_render.conf.erb: __self
-  lib: __self
-  lib/auth_util.rb: __self
-  lib/libonly1.rb: module-1
-  lib/libonly2.rb: module-2
 tpl_ext: .erb

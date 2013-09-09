@@ -9,10 +9,10 @@ attrs:
   application_code: module_1_code
   gems:
     default:
-      - rspec: '~> 1.0.0'
-      - mongoid: ''
+      rspec: '~> 1.0.0'
+      mongoid: ''
     development:
-      - rack-test: '~> 0.1.0'
+      rack-test: '~> 0.1.0'
 files:
   README.md: '__self'
 

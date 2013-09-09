@@ -103,21 +103,16 @@ module AppStack
         # skip .erb file as template
         next if file.match(/#{@config['tpl_ext']}$/) &&
                 elist.include?(file.sub(/#{@config['tpl_ext']}$/, ''))
+        # find the absolute path for source and target file for copy
+        src_f = File.expand_path(app_dir + '/' + file)
+        tgt_f = File.expand_path(@app_root + '/' + file)
+
         if @files[file].nil? || @files[file] == app # yes, copy it
           @files[file] = app unless @files[file]
 
-          # find the absolute path for source and target file for copy
-          src_f = File.expand_path(app_dir + '/' + file)
-          tgt_f = File.expand_path(@app_root + '/' + file)
-
-          # if has a template file, use render rather than copy
-          if File.exists?(src_f + @config['tpl_ext'])
-            carp "From #{app.blue.bold} render #{file.bold}",
-                 render_file!(src_f + @config['tpl_ext'], tgt_f), 1
-          else
-            carp "From #{app.blue.bold} copy #{file.bold}",
-                 copy_file!(src_f, tgt_f), 1
-          end
+          carp "From #{app.blue.bold} copy #{file.bold}",
+               copy_file!(src_f, tgt_f),
+               1 unless File.exists?(src_f + @config['tpl_ext'])
 
           # register the copied file to app-root file list
           @self_files << file unless @self_files.include?(file)
@@ -125,6 +120,10 @@ module AppStack
           carp "From #{app.blue.bold} #{file.bold}",
                'skip, use '.white + @files[file], 2
         end
+
+        carp "From #{app.blue.bold} render #{file.bold}",
+             render_file!(src_f + @config['tpl_ext'], tgt_f),
+             1 if File.exists?(src_f + @config['tpl_ext'])
       end
     end
   end

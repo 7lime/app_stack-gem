@@ -13,12 +13,12 @@ attrs:
   application_code: module_2_code
   gems:
     default:
-      - rspec: '~> 2.0.0'
-      - grape: ''
+      rspec: '~> 2.0.0'
+      grape: ''
     development:
-      - simplecov: ''
-      - factory_girls: ''
-      - rack_test: ''
+      simplecov: ''
+      factory_girls: ''
+      rack_test: ''
 files:
   README.md: '__self'
 

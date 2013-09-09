@@ -1,11 +1,11 @@
 source 'http://ruby.taobao.com/'
 
-<% gems.default.each do |g, v| %>
-  gem: '<%= g %>'<% if v.size > 0 %>, '<%= v %>'<% end %>
+<% gems['default'].each do |g, v| %>
+gem: '<%= g %>'<% if v.size > 0 %>, '<%= v %>'<% end %>
 <% end %>
 
 group :development do
-  <% gems.development.each do |g, v| %>
-    gem: '<%= g %>'<% if v.size > 0 %>, '<%= v %>'<% end %>
-  <% end %>
+<% gems['development'].each do |g, v| %>
+  gem: '<%= g %>'<% if v.size > 0 %>, '<%= v %>'<% end %>
+<% end %>
 end
