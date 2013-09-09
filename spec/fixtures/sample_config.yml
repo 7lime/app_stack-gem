@@ -1,0 +1,23 @@
+stack: [module-1, module-2]
+stack_dir: '../apps'
+tpl_ext: '.erb'
+verbose: 1
+export:
+  lib/**/*.rb
+  app/**/*.rb
+include:
+  spec/**/*.rb
+exclude:
+  lib/extra/*.rb
+attrs:
+  application_name: App Name
+  application_code: app_code
+  database_password: the very secret
+  gems:
+    default:
+      rspec: '~> 2.0.0'
+      mongoid: ''
+    development:
+files:
+  README.md << __self
+
