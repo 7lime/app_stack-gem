@@ -7,7 +7,7 @@ Gem::Specification.new 'app_stack', AppStack::VERSION do |s|
   s.authors           = ['Huang Wei']
   s.email             = 'huangw@7lime.com'
   s.homepage          = 'https://github.com/7lime/app_stack-gem'
-  s.files             = `git ls-files`.split("\n") - %w[.gitignore Rakefile]
+  s.files             = `git ls-files`.split("\n") - %w[.gitignore .rspec Rakefile]
   s.license           = 'MIT'
   s.test_files        = Dir.glob('{spec,test}/**/*.rb')
 
