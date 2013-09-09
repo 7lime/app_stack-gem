@@ -44,7 +44,8 @@ describe AppStack do
   describe '#merge_stacks!' do
     it 'raise for non existing directory' do
       AppStack.load_configuration('spec/fixtures/sample_config.yml')
-      expect { AppStack.merge_stacks!(AppStack.config['stack']) }.to raise_error
+      stacks = AppStack.config['stack']
+      expect { AppStack.merge_stacks!(stacks) }.to raise_error
     end
   end
 end

@@ -24,12 +24,15 @@ module AppStack
     register_self!(@app_root)
     merge_stacks!(@config['stack'])
 
+    render_self!(@app_root)
+
     # rewrite configuration back to app-stack file
     @config['files'] = @files
     File.open(file, 'wb') { |fh| fh.puts YAML.dump(@config) }
   end
 
   # convert directory names, load configuration from yaml file
+  # rubocop:disable MethodLength
   def load_configuration(conf_file)
     @conf_file = conf_file || CONF_FILE
     @config = YAML.load(File.read(@conf_file))
@@ -42,6 +45,9 @@ module AppStack
 
     @verbose = @config['verbose'] || 1
     @verbose = @verbose.to_i
+
+    # attrs to assigned into template
+    @attrs = {}
 
     @files = @config['files'] || {}
   end
@@ -73,14 +79,52 @@ module AppStack
       raise "no directory found for #{app}" unless File.directory?(app_dir)
       raise "no configuration found for #{app}" unless
                File.exists?(app_dir + '/' + File.basename(@conf_file))
-      export_list(app_dir).each {}
+
+      # loop over remote files
+      elist = export_list(app_dir)
+      elist.each do |file|
+        # skip .erb file as template
+        next if elist.include?(file.sub(/#{@config['tpl_ext']}$/, ''))
+        if @files[file].nil? || @files[file] == app # yes, copy it
+          @files[file] = app unless @files[file]
+
+          # find the absolute path for source and target file for copy
+          src_f = File.expand_path(app_dir + '/' + file)
+          tgt_f = File.expand_path(@app_root + '/' + file)
+
+          # if has a template file, use render rather than copy
+          if File.exists?(src_f + @config['tpl_ext'])
+            carp "From #{stack_app.blue.bold} copy #{file.bold}",
+                 render_file!(src_f + @config['tpl_ext'], tgt_f), 1
+          else
+            carp "From #{stack_app.blue.bold} render #{file.bold}",
+                 copy_file!(src_f, tgt_f), 1
+          end
+        else # don't handle it
+          carp "From #{stack_app.blue.bold} #{file.bold}",
+               'skip, use '.white + @files[file], 2
+        end
+      end
     end
   end
 
-  # private utility functions
+  def render_self!(dir)
+    Find.find(dir).each do |f|
+      next if f == dir
+      basename = f.sub(/^#{dir}\//, '')
+      next if basename.match(/^.git$/)
+      next if basename.match(/^.git\W/)
+      next if gitignore_list(dir).include?(basename)
+
+      if File.exists?(f + @config['tpl_ext'])
+        carp "Render #{basename.bold} ",
+             render_file!(f + @config['tpl_ext'], f), 1
+      end
+    end
+  end
 
   # print debug / information message to console based on verbose level
-  def carp(job, state = 'done'.bold.green, v = 1)
+  def carp(job, state = 'done'.green, v = 1)
     return if @verbose < v
     dots = 70 - job.size
     job += ' ' + '.' * dots if dots > 0
@@ -116,6 +160,10 @@ module AppStack
     dir_conf = YAML.load(File.read(dir + '/' + File.basename(@conf_file)))
     dir_conf['export'] ||= []
 
+    # update attr list for assign to template files
+    @attrs.deep_merge! dir_conf['attrs'] if dir_conf['attrs'] &&
+                                           dir_conf['attrs'].is_a?(Hash)
+
     flist = []
     # export list defined in stack app's configuration
     dir_conf['export'].each do |e|
@@ -134,6 +182,40 @@ module AppStack
 
     # adjust by include/exclude and
     flist + inc_list - gitignore_list(dir) - exc_list
+  end
+
+  # copy file if newer
+  def copy_file!(f, target)
+    # directory?
+    if File.directory?(f)
+      if File.directory?(target)
+        done = 'exists'.green
+      else
+        FileUtils.mkdir_p target
+        done = 'created'.bold.green
+      end
+    else
+      if newer?(f, target)
+        FileUtils.copy f, target
+        done = 'copied'.bold.green
+      else
+        done = 'keep'.white
+      end
+    end
+    done
+  end
+
+  # render from erb if newer
+  def render_file!(f, target)
+    done = 'keep'.white
+    if newer?(f, target)
+      tilt = Tilt::ERBTemplate.new(f)
+      oh = File.open(target, 'wb')
+      oh.write tilt.render(OpenStruct.new(@attrs.deep_merge(@config['attrs'])))
+      oh.close
+      done = 'rendered'.bold.green
+    end
+    done
   end
 
   # use module variables, skip `new`

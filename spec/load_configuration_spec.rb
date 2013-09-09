@@ -1,3 +1,4 @@
+# encoding: utf-8
 require 'spec_helper'
 
 describe AppStack do
@@ -5,7 +6,7 @@ describe AppStack do
     it 'load yaml configurations' do
       AppStack.load_configuration('spec/fixtures/sample_config.yml')
       AppStack.config['tpl_ext'].should eq('.erb')
-   end
+    end
 
     it 'set initial directories' do
       AppStack.app_root.should eq(File.expand_path('spec/fixtures'))
