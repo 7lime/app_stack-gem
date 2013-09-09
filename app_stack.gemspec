@@ -11,8 +11,9 @@ Gem::Specification.new 'app_stack', AppStack::VERSION do |s|
   s.license           = 'MIT'
   s.test_files        = Dir.glob('{spec,test}/**/*.rb')
 
-  s.add_dependency 'tilt'
-  s.add_dependency 'term-ansicolor'
+  s.add_dependency 'tilt', '~> 1.4.1'
+  s.add_dependency 'term-ansicolor', '~> 1.2.2'
+  s.add_dependency 'activesupport', '~> 3.2.14'
   s.add_development_dependency 'rspec', '~> 2.5'
 end
 
