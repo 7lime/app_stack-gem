@@ -15,23 +15,23 @@ directory, in format like:
     tpl_ext: '.erb'
     verbose: 1
     export:
-      lib/**/*.rb
-      app/**/*.rb
+      - lib/**/*.rb
+      - app/**/*.rb
     include:
-      spec/**/*.rb
+      - spec/**/*.rb
     exclude:
-      lib/extra/*.rb
+      - lib/extra/*.rb
     attrs:
       application_name: App Name
       application_code: app_code
       database_password: the very secret
       gems:
         default:
-          rspec: '~> 2.0.0'
-          ...
+          - rspec: '~> 2.0.0'
+          - ...
         development:
     files:
-      README.md << __self
+      README.md: __self
  
 `files` field is auto-generated, you should not edit it manually.
 

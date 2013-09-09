@@ -22,7 +22,7 @@ module AppStack
     load_configuration(conf_file)
 
     register_self!(@app_root)
-    # merge_stack!(stack_app)
+    merge_stacks!(@config['stack'])
 
     # rewrite configuration back to app-stack file
     @config['files'] = @files
@@ -66,6 +66,17 @@ module AppStack
     end
   end
 
+  # copy from a stack of applications
+  def merge_stacks!(stack)
+    stack.each do |app|
+      app_dir = @stack_dir + '/' + app
+      raise "no directory found for #{app}" unless File.directory?(app_dir)
+      raise "no configuration found for #{app}" unless
+               File.exists?(app_dir + '/' + File.basename(@conf_file))
+      export_list(app_dir).each {}
+    end
+  end
+
   # private utility functions
 
   # print debug / information message to console based on verbose level
@@ -91,6 +102,38 @@ module AppStack
       end
     end
     @gitignore_list[dir] = ilist
+  end
+
+  # if f1 newer than f2, or f2 not exits but f1 does.
+  def newer?(f1, f2)
+    return false unless File.exists?(f1)
+    return true unless File.exists?(f2)
+    File.mtime(f1) > File.mtime(f2)
+  end
+
+  # find a list of file to copy based on export setting
+  def export_list(dir)
+    dir_conf = YAML.load(File.read(dir + '/' + File.basename(@conf_file)))
+    dir_conf['export'] ||= []
+
+    flist = []
+    # export list defined in stack app's configuration
+    dir_conf['export'].each do |e|
+      Dir[dir + '/' + e].each { |f| flist << f.sub(/^#{dir}\/?/, '') }
+    end
+
+    # collect include/exclude list from configuration of app-root
+    inc_list, exc_list = [], []
+    @config['include'].each do |inc|
+      Dir[dir + '/' + inc].each { |f| inc_list << f.sub(/^#{dir}\/?/, '') }
+    end
+
+    @config['exclude'].each do |exc|
+      Dir[dir + '/' + exc].each { |f| exc_list << f.sub(/^#{dir}\/?/, '') }
+    end
+
+    # adjust by include/exclude and
+    flist + inc_list - gitignore_list(dir) - exc_list
   end
 
   # use module variables, skip `new`

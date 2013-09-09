@@ -1,10 +1,11 @@
-stack: [module-1, module-2]
-stack_dir: '../apps'
+stack: [incexc]
+stack_dir: '.'
 tpl_ext: '.erb'
 verbose: 1
 export:
   - lib/**/*.rb
-  - app/**/*.rb
+  - Rakefile
+  - Rakefile.erb
 include:
   - spec/**/*.rb
 exclude:
@@ -20,4 +21,5 @@ attrs:
     development:
 files:
   README.md: '__self'
+
 

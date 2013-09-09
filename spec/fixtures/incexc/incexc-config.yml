@@ -1,5 +1,5 @@
-stack: [module-1, module-2]
-stack_dir: '../apps'
+stack: [incexc]
+stack_dir: '.'
 tpl_ext: '.erb'
 verbose: 1
 export:
@@ -20,4 +20,5 @@ attrs:
     development:
 files:
   README.md: '__self'
+
 
