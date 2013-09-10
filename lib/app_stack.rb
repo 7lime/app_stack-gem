@@ -106,23 +106,27 @@ module AppStack
         src_f = File.expand_path(app_dir + '/' + file)
         tgt_f = File.expand_path(@app_root + '/' + file)
 
-        if @files[file].nil? || @files[file] == app # yes, copy it
-          @files[file] = app unless @files[file]
+        if @files[file] == '__self' # don't handle it
+          carp "From #{app.blue.bold} #{file.bold}",
+               'skip, use '.white + @files[file], 2
+        else # not registered as self, copy over
+          unless @files[file] == app
+            carp "By #{app.bold.blue}, overwrite #{@files[file].bold} #{file}",
+                 'ok'.green, 1 if @files[file]
+            @files[file] = app
+          end
 
           if File.exists?(src_f + @config['tpl_ext'])
-             carp "From #{app.blue.bold} render #{file.bold}",
-               render_file!(src_f + @config['tpl_ext'], tgt_f), 1
+            carp "From #{app.blue.bold} render #{file.bold}",
+                 render_file!(src_f + @config['tpl_ext'], tgt_f), 1
 
           else
-             carp "From #{app.blue.bold} copy #{file.bold}",
+            carp "From #{app.blue.bold} copy #{file.bold}",
                  copy_file!(src_f, tgt_f), 1
           end
 
           # register the copied file to app-root file list
           @self_files << file unless @self_files.include?(file)
-        else # don't handle it
-          carp "From #{app.blue.bold} #{file.bold}",
-               'skip, use '.white + @files[file], 2
         end
       end
     end
@@ -214,7 +218,7 @@ module AppStack
 
   # render from erb if newer
   def render_file!(f, target)
-    done = 'keep'.white
+    # done = 'keep'.white
     # if newer?(f, target)
     tilt = Tilt::ERBTemplate.new(f)
     oh = File.open(target, 'wb')

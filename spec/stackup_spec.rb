@@ -12,6 +12,7 @@ describe AppStack do
       # sleep 1
 
       FileUtils.touch('spec/fixtures/my_app/config/self_render.conf.erb')
+      FileUtils.touch('spec/fixtures/stack_apps/module-1/Gemfile')
       FileUtils.touch('spec/fixtures/stack_apps/module-2/Gemfile.erb')
 
       # run the stackup script
