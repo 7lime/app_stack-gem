@@ -95,7 +95,6 @@ module AppStack
       raise "no directory found for #{app}" unless File.directory?(app_dir)
       raise "no configuration found for #{app}" unless
                File.exists?(app_dir + '/' + File.basename(@conf_file))
-      carp "Merge #{app.bold.blue}"
 
       # loop over remote files
       elist = export_list(app_dir)
@@ -110,9 +109,14 @@ module AppStack
         if @files[file].nil? || @files[file] == app # yes, copy it
           @files[file] = app unless @files[file]
 
-          carp "From #{app.blue.bold} copy #{file.bold}",
-               copy_file!(src_f, tgt_f),
-               1 unless File.exists?(src_f + @config['tpl_ext'])
+          if File.exists?(src_f + @config['tpl_ext'])
+             carp "From #{app.blue.bold} render #{file.bold}",
+               render_file!(src_f + @config['tpl_ext'], tgt_f), 1
+
+          else
+             carp "From #{app.blue.bold} copy #{file.bold}",
+                 copy_file!(src_f, tgt_f), 1
+          end
 
           # register the copied file to app-root file list
           @self_files << file unless @self_files.include?(file)
@@ -120,10 +124,6 @@ module AppStack
           carp "From #{app.blue.bold} #{file.bold}",
                'skip, use '.white + @files[file], 2
         end
-
-        carp "From #{app.blue.bold} render #{file.bold}",
-             render_file!(src_f + @config['tpl_ext'], tgt_f),
-             1 if File.exists?(src_f + @config['tpl_ext'])
       end
     end
   end

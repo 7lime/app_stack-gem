@@ -3,7 +3,6 @@ export:
   - lib/**/*.rb
   - config/**/*
   - app/**/*.rb
-  - Gemfile
 attrs:
   application_name: App Name for Module 1
   application_code: module_1_code

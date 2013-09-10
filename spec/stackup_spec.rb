@@ -5,11 +5,11 @@ describe AppStack do
     before(:all) do
       FileUtils.cp 'spec/fixtures/.app_stack.yml', 'spec/fixtures/my_app'
 
-      %w[config/self_render.conf Gemfile].each do |f|
+      %w[config/self_render.conf].each do |f|
         FileUtils.touch('spec/fixtures/my_app/' + f)
       end
 
-      sleep 1
+      # sleep 1
 
       FileUtils.touch('spec/fixtures/my_app/config/self_render.conf.erb')
       FileUtils.touch('spec/fixtures/stack_apps/module-2/Gemfile.erb')
@@ -45,7 +45,7 @@ describe AppStack do
     end
 
     after(:all) do
-      %w[config/self_render.conf Gemfile
+      %w[config/self_render.conf Gemfile lib/auth_util.rb
          lib/libonly1.rb lib/libonly2.rb].each do |f|
         file = 'spec/fixtures/my_app/' + f
         FileUtils.rm(file) if File.exists?(file)
