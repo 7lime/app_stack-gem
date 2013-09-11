@@ -100,13 +100,20 @@ module AppStack
   # copy from a stack of applications
   def merge_stacks!(stack)
     stack.each do |app|
-      app_dir = @stack_dir + '/' + app
+
+      app_dir, groups = '', ['default']
+      if app.is_a?(Hash)
+        app.each { |k, v| app_dir, groups = k, v }
+      else
+        app_dir = @stack_dir + '/' + app
+      end
+
       raise "no directory found for #{app}" unless File.directory?(app_dir)
       raise "no configuration found for #{app}" unless
                File.exists?(app_dir + '/' + File.basename(@conf_file))
 
       # loop over remote files
-      elist = export_list(app_dir)
+      elist = export_list(app_dir, groups)
       elist.each do |file|
         # skip .erb file as template
         next if file.match(/#{@config['tpl_ext']}$/) &&
@@ -174,25 +181,38 @@ module AppStack
   end
 
   # find a list of file to copy based on export setting
-  def export_list(dir)
+  def export_list(dir, groups = ['default'])
     dir_conf = YAML.load(File.read(dir + '/' + File.basename(@conf_file)))
     dir_conf['export'] ||= []
+    dir_conf['exclude'] ||= []
 
     # update attr list for assign to template files
     @attrs.deep_merge! dir_conf['attrs'] if dir_conf['attrs'] &&
                                            dir_conf['attrs'].is_a?(Hash)
 
-    flist = []
+    group_patterns, flist = { 'default' => [] }, []
     # export list defined in stack app's configuration
     dir_conf['export'].each do |e|
-      Dir[dir + '/' + e].each do |f|
-        fn = f.sub(/^#{dir}\/?/, '')
-        flist << fn unless flist.include?(fn)
+      if e.is_a?(Hash)
+        e.each { |k, v| group_patterns[k] = v }
+      else
+        group_patterns['default'] << e
+      end
+    end
+
+    group_patterns.each do |k, v|
+      raise "file for group #{k} is not a array." unless v.is_a?(Array)
+      next unless groups.include?(k) || groups.include?('all')
+      v.each do |e|
+        Dir[dir + '/' + e].each do |f|
+         fn = f.sub(/^#{dir}\/?/, '')
+         flist << fn unless flist.include?(fn)
+        end
       end
     end
 
     exc_list = []
-    @config['exclude'].each do |exc|
+    dir_conf['exclude'].each do |exc|
       Dir[dir + '/' + exc].each do |f|
         fn = f.sub(/^#{dir}\/?/, '')
         exc_list << fn unless exc_list.include?(fn)

@@ -5,8 +5,8 @@ verbose: 1
 export:
   - lib/**/*.rb
   - app/**/*.rb
-include:
-  - spec/**/*.rb
+  - test:
+      - spec/**/*
 exclude:
   - lib/extra/*.rb
 attrs:

@@ -40,6 +40,20 @@ describe AppStack do
     #   el.include?('spec/spec_helper.rb').should be_true
     #   el.include?('spec/support/api_test.rb').should be_true
     # end
+
+    it 'can include grouped files' do
+      el.include?('spec/support/api_test.rb').should be_false
+      elist = AppStack.export_list('spec/fixtures/incexc', ['default', 'test'])
+      elist.include?('spec/support/api_test.rb').should be_true
+      elist.include?('spec/spec_helper.rb').should be_true
+    end
+
+    it 'can set to include all files' do
+      elist = AppStack.export_list('spec/fixtures/incexc', ['all'])
+      elist.include?('spec/support/api_test.rb').should be_true
+      elist.include?('spec/spec_helper.rb').should be_true
+      elist.include?('lib/mixin/otherlib.rb').should be_true
+    end
   end
 
   describe '#merge_stacks!' do
