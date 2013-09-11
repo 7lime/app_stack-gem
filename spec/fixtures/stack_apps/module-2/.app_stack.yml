@@ -4,8 +4,6 @@ export:
   - config/**/*
   - app/**/*.rb
   - Gemfile
-include:
-  - spec/**/*.rb
 exclude:
   - lib/extra/*.rb
 attrs:

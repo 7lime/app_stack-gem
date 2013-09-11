@@ -35,10 +35,11 @@ describe AppStack do
       el.include?('lib/extra/excludes.rb').should be_false
     end
 
-    it 'include explicitly included files' do
-      el.include?('spec/spec_helper.rb').should be_true
-      el.include?('spec/support/api_test.rb').should be_true
-    end
+    # depreciated
+    # it 'include explicitly included files' do
+    #   el.include?('spec/spec_helper.rb').should be_true
+    #   el.include?('spec/support/api_test.rb').should be_true
+    # end
   end
 
   describe '#merge_stacks!' do

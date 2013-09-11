@@ -26,8 +26,8 @@ module AppStack
     render_self!(@self_files)
 
     # rewrite configuration back to app-stack file
-    @config['files'] = @files
-    File.open(conf_file, 'wb') { |fh| fh.puts YAML.dump(@config) }
+    @origin_config['files'] = @files
+    File.open(conf_file, 'wb') { |fh| fh.puts YAML.dump(@origin_config) }
   end
 
   # convert directory names, load configuration from yaml file
@@ -35,6 +35,7 @@ module AppStack
   def load_configuration(conf_file)
     @conf_file = conf_file || CONF_FILE
     @config = YAML.load(File.read(@conf_file))
+    @origin_config = @config.dup
 
     @app_root = @config['app_root'] || File.dirname(@conf_file)
     @app_root = File.expand_path(@app_root)
@@ -42,17 +43,25 @@ module AppStack
     @stack_dir = File.expand_path(@app_root + '/' +
                       @stack_dir) if @stack_dir.match(/^\.\.?\//)
 
+    # default values
     @verbose = @config['verbose'] || 1
     @verbose = @verbose.to_i
 
     @config['tpl_ext'] ||= '.erb'
+    raise ArgumentError, 'ERROR: `include` key depriciated, ' +
+          'please update your yml file' if @config['include']
+    @config['include'] = []
+    @config['exclude'] ||= []
+    @config['export'] ||= [] # even export can be blank
+    @config['stack'] ||= []
+    @config['files'] ||= {}
 
     # attrs to assigned into template
     @attrs = {}
     # file list under the app_root
     @self_files = []
 
-    @files = @config['files'] || {}
+    @files = @config['files']
   end
 
   # for files already in the app root, register to no-copy list
@@ -149,8 +158,8 @@ module AppStack
     if File.exists?(dir + '/.gitignore')
       File.read(dir + '/.gitignore').split("\n").each do |line|
         Dir[dir + '/' + line].each do |f|
-          f.sub!(/^#{dir}\//, '')
-          ilist << f unless ilist.include?(f)
+          fn = f.sub(/^#{dir}\//, '')
+          ilist << fn unless ilist.include?(fn)
         end
       end
     end
@@ -176,21 +185,22 @@ module AppStack
     flist = []
     # export list defined in stack app's configuration
     dir_conf['export'].each do |e|
-      Dir[dir + '/' + e].each { |f| flist << f.sub(/^#{dir}\/?/, '') }
+      Dir[dir + '/' + e].each do |f|
+        fn = f.sub(/^#{dir}\/?/, '')
+        flist << fn unless flist.include?(fn)
+      end
     end
 
-    # collect include/exclude list from configuration of app-root
-    inc_list, exc_list = [], []
-    @config['include'].each do |inc|
-      Dir[dir + '/' + inc].each { |f| inc_list << f.sub(/^#{dir}\/?/, '') }
-    end
-
+    exc_list = []
     @config['exclude'].each do |exc|
-      Dir[dir + '/' + exc].each { |f| exc_list << f.sub(/^#{dir}\/?/, '') }
+      Dir[dir + '/' + exc].each do |f|
+        fn = f.sub(/^#{dir}\/?/, '')
+        exc_list << fn unless exc_list.include?(fn)
+      end
     end
 
     # adjust by include/exclude and
-    flist + inc_list - gitignore_list(dir) - exc_list
+    flist - gitignore_list(dir) - exc_list
   end
 
   # copy file if newer

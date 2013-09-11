@@ -6,8 +6,6 @@ export:
   - lib/**/*.rb
   - Rakefile
   - Rakefile.erb
-include:
-  - spec/**/*.rb
 exclude:
   - lib/extra/*.rb
 attrs:

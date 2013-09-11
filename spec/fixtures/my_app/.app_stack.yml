@@ -6,8 +6,6 @@ export:
 - lib/**/*.rb
 - config/**/*
 - app/**/*.rb
-include:
-- spec/**/*.rb
 exclude:
 - lib/extra/*.rb
 attrs:
@@ -31,4 +29,3 @@ files:
   lib/libonly1.rb: module-1
   lib/libonly2.rb: module-2
   Gemfile: module-2
-tpl_ext: .erb
