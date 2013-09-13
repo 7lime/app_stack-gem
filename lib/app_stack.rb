@@ -100,13 +100,11 @@ module AppStack
   # copy from a stack of applications
   def merge_stacks!(stack)
     stack.each do |app|
-
       app_dir, groups = '', ['default']
       if app.is_a?(Hash)
-        app.each { |k, v| app_dir, groups = k, v }
-      else
-        app_dir = @stack_dir + '/' + app
+        app.each { |k, v| app, groups = k, v }
       end
+      app_dir = @stack_dir + '/' + app
 
       raise "no directory found for #{app}" unless File.directory?(app_dir)
       raise "no configuration found for #{app}" unless
