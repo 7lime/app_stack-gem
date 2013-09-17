@@ -247,17 +247,17 @@ module AppStack
   # render from erb if newer
   def render_file!(f, target)
     done = 'keep'.white
-    unless newer?(target, f)
-      tilt = Tilt::ERBTemplate.new(f)
-      oh = File.open(target, 'wb')
-      oh.write tilt.render(OpenStruct.new(@attrs.deep_merge(@config['attrs'])))
-      oh.close
+    # unless newer?(target, f)
+    tilt = Tilt::ERBTemplate.new(f)
+    oh = File.open(target, 'wb')
+    oh.write tilt.render(OpenStruct.new(@attrs.deep_merge(@config['attrs'])))
+    oh.close
 
-      # update template timestamp
-      FileUtils.touch(f)
-      done = 'rendered'.bold.green
-    end
-    done
+    # update template timestamp
+    FileUtils.touch(f)
+    done = 'rendered'.bold.green
+    # end
+    # done
   end
 
   # use module variables, skip `new`
